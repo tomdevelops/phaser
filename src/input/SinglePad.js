@@ -168,7 +168,19 @@ Phaser.SinglePad.prototype = {
     */
     pollStatus: function () {
 
-        if (!this.connected || !this.game.input.enabled || !this.game.input.gamepad.enabled || (this._rawPad.timestamp && (this._rawPad.timestamp === this._prevTimestamp)))
+        if (!this.connected || !this.game.input.enabled || !this.game.input.gamepad.enabled)
+        {
+            return;
+        }
+        
+        for (var i = 0; i < this._buttonsLen; i++) {
+            var rawButtonVal = isNaN(this._rawPad.buttons[i]) ? this._rawPad.buttons[i].value : this._rawPad.buttons[i];
+            
+            if (rawButtonVal > 0)
+                this.processButtonHold(i, rawButtonVal);
+        }
+
+        if (this._rawPad.timestamp && (this._rawPad.timestamp === this._prevTimestamp))
         {
             return;
         }
@@ -317,6 +329,7 @@ Phaser.SinglePad.prototype = {
         this.onConnectCallback = null;
         this.onDisconnectCallback = null;
         this.onDownCallback = null;
+        this.onHoldCallback = null;
         this.onUpCallback = null;
         this.onAxisCallback = null;
         this.onFloatCallback = null;
@@ -374,6 +387,28 @@ Phaser.SinglePad.prototype = {
             this._buttons[buttonCode].start(null, value);
         }
 
+    },
+    
+    /**
+    * Handles button hold down press.
+    * 
+    * @method Phaser.SinglePad#processButtonHold
+    * @param {number} buttonCode - Which buttonCode of this button
+    * @param {object} value - Button value
+    */
+    processButtonHold: function (buttonCode, value) {
+
+        if (this._padParent.onHoldCallback) {
+            this._padParent.onHoldCallback.call(this._padParent.callbackContext, buttonCode, value, this.index);
+        }
+
+        if (this.onHoldCallback) {
+            this.onHoldCallback.call(this.callbackContext, buttonCode, value);
+        }
+
+        if (this._buttons[buttonCode]) {
+            this._buttons[buttonCode].update();
+        }
     },
 
     /**

@@ -122,6 +122,14 @@ Phaser.DeviceButton = function (parent, buttonCode) {
     this.onDown = new Phaser.Signal();
 
     /**
+    * This Signal is dispatched every time this DeviceButton is held down.
+    * Warning: Depending on refresh rate that could be 60+ times per second.    
+    * When dispatched it sends 2 arguments: A reference to this DeviceButton and the value of the button.
+    * @property {Phaser.Signal} onDown
+    */
+    this.onHold = new Phaser.Signal();
+
+    /**
     * This Signal is dispatched every time this DeviceButton is released from a down state.
     * It is only dispatched once (until the button is pressed again).
     * When dispatched it sends 2 arguments: A reference to this DeviceButton and the value of the button.
@@ -140,6 +148,23 @@ Phaser.DeviceButton = function (parent, buttonCode) {
 };
 
 Phaser.DeviceButton.prototype = {
+    /**
+    * Called automatically by Phaser.SinglePad
+    * 
+    * @method Phaser.Key#update
+    * @protected
+    */
+    update: function () {
+
+        if (this.isDown)
+        {
+            this.duration = this.game.time.time - this.timeDown;
+            this.repeats++;
+            
+            this.onHold.dispatch(this);
+        }
+
+    },
 
     /**
     * Called automatically by Phaser.Pointer and Phaser.SinglePad.
@@ -195,6 +220,7 @@ Phaser.DeviceButton.prototype = {
         this.isDown = false;
         this.isUp = true;
         this.timeUp = this.game.time.time;
+        this.duration = this.game.time.time - this.timeDown;
 
         this.event = event;
         this.value = value;
@@ -277,7 +303,7 @@ Phaser.DeviceButton.prototype = {
     },
 
     /**
-    * Destroys this DeviceButton, this disposes of the onDown, onUp and onFloat signals 
+    * Destroys this DeviceButton, this disposes of the onDown, onHold, onUp and onFloat signals
     * and clears the parent and game references.
     * 
     * @method Phaser.DeviceButton#destroy
@@ -285,6 +311,7 @@ Phaser.DeviceButton.prototype = {
     destroy: function () {
 
         this.onDown.dispose();
+        this.onHold.dispose();
         this.onUp.dispose();
         this.onFloat.dispose();
 
