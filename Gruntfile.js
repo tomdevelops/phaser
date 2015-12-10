@@ -512,16 +512,15 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('hellforge', 'Phaser with Arcade Physics, Tilemaps and Particles', function() {
-
         grunt.option('exclude', 'ninja,p2,creature');
         grunt.option('filename', 'hf-phaser');
         grunt.option('sourcemap', true);
         grunt.option('copy', false);
         grunt.option('copycustom', true);
         grunt.option('uglify', true);
+        grunt.option('split', true);
 
         grunt.task.run('custom');
-
     });
 
 };
